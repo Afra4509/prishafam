@@ -213,8 +213,8 @@ CREATE POLICY "Allow all for service role"
 -- ==============================================================================
 
 INSERT INTO users (user_id, username, password_hash, name, role, status) VALUES
-  ('USR-001', 'admin', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a', 'Administrator', 'ADMIN', 'ACTIVE'),
-  ('USR-002', 'staff', '04f8996da763b7a969b1028ee3007569eaf3a635486ddab211d512c85b9df8fb', 'Farm Staff',     'USER',  'ACTIVE')
+  ('USR-001', 'admin', '3eb3fe66b31e3b4d10fa70b5cad49c7112294af6ae4e476a1c405155d45aa121', 'Administrator', 'ADMIN', 'ACTIVE'),
+  ('USR-002', 'staff', '05dd4a1376a72d9a5e0fad32000f7e61651a5cef5c9c9a0c3816c7443dafbf6f', 'Farm Staff',     'USER',  'ACTIVE')
 ON CONFLICT (user_id) DO NOTHING;
 
 -- ==============================================================================
