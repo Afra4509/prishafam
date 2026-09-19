@@ -18,13 +18,23 @@ const SUPABASE_CONFIG = {
 };
 
 var supabaseClient = null;
-if (SUPABASE_CONFIG.URL && SUPABASE_CONFIG.ANON_KEY && typeof supabase !== 'undefined') {
-  try {
-    supabaseClient = supabase.createClient(SUPABASE_CONFIG.URL, SUPABASE_CONFIG.ANON_KEY);
-  } catch (e) {
-    console.warn('Supabase init failed:', e);
+
+function initSupabaseClient(url, key) {
+  if (url && key && typeof supabase !== 'undefined') {
+    try {
+      supabaseClient = supabase.createClient(url, key);
+      SUPABASE_CONFIG.URL = url;
+      SUPABASE_CONFIG.ANON_KEY = key;
+      return true;
+    } catch (e) {
+      console.warn('Supabase init failed:', e);
+    }
   }
+  return false;
 }
+
+// Initialize client with configured URL & Key
+initSupabaseClient(SUPABASE_CONFIG.URL, SUPABASE_CONFIG.ANON_KEY);
 
 const SESSION_KEY         = 'farmelle_session';
 const SESSION_DURATION_MS = 8 * 60 * 60 * 1000; // 8 hours
@@ -648,9 +658,35 @@ function updateUserDisplay() {
  * SECTION 7: INITIALIZATION
  * ============================================================================== */
 
+/**
+ * Synchronize environment configuration from Vercel Serverless API (/api/config)
+ * Allows Vercel environment variables to seamlessly configure the Supabase client.
+ */
+async function syncRemoteConfig() {
+  if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
+    try {
+      var res = await fetch('/api/config');
+      if (res.ok) {
+        var cfg = await res.json();
+        if (cfg && cfg.supabaseUrl && cfg.supabaseKey) {
+          var customUrl = localStorage.getItem('farmelle_supabase_url');
+          if (!customUrl) {
+            initSupabaseClient(cfg.supabaseUrl, cfg.supabaseKey);
+          }
+        }
+      }
+    } catch (e) {
+      // Running locally or offline without /api/config endpoint
+    }
+  }
+}
+
 document.addEventListener('DOMContentLoaded', async function() {
   // Apply saved theme first
   applyTheme(state.activeTheme);
+
+  // Sync Vercel environment variables if deployed
+  await syncRemoteConfig();
 
   // Seed demo users (async, must complete before login check)
   await ensureDemoUsersExist();
